@@ -1,7 +1,4 @@
-safe: true
-
-paginate: 10
-future: false
-pygments: false
+paginate: 5
+pygments: true
 markdown: rdiscount
 permalink: /blog/:year/:month/:day/:title/
