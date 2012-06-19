@@ -1,2 +1,16 @@
-.fb-comments, .fb-comments iframe[style] {width: 100% !important;}
 .fb-comments, .fb-comments > span[style], .fb_iframe_widget iframe[style] { width: 100% !important; }
+.pagination,
+.pagination-single {
+    margin-top: 20px;
+    overflow:hidden;
+}
+.pagination .previous a,
+.pagination-single .previous {
+    float:left;
+    padding:18px;
+}
+.pagination .next a,
+.pagination-single .next {
+    float:right;
+    padding:18px;
+}

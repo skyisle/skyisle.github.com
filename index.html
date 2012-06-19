@@ -3,26 +3,36 @@ layout: default
 blogtitle: Walks on my mind
 ---
 
-<p>Index page</p>
 <div class="posts">
     <ul>
         {% for post in paginator.posts %}
-        <li> {{ post.date | date_to_string }} <a href="{{ post.url }}">{{ post.title }}</a> </li>
+
+        <!-- here add you post markup -->
+        <h1><a href="{{ post.url }}">{{ post.title }}</a></h1>
+        <p class="author">
+        <span class="date">{{post.date}}</span>
+        </p>
+        <div class="content">
+            {{ post.content }}
+        </div>
         {% endfor %}
-  </ul>
+    </ul>
 </div>
 
 <!-- Pagination links -->
 <div class="pagination">
-  {% if paginator.previous_page %}
-    <a href="/page{{paginator.previous_page}}" class="previous">Prev.</a>
-  {% else %}
-    <span class="previous">Prev.</span>
-  {% endif %}
-  <span class="page_number "> {{paginator.page}} / {{paginator.total_pages}}</span>
-  {% if paginator.next_page %}
-    <a href="/page{{paginator.next_page}}" class="next ">Next</a>
-  {% else %}
-    <span class="next ">Next</span>
-  {% endif %}
+  <span class="previous">
+    {% if paginator.previous_page %}
+      {% if paginator.previous_page == 1 %}
+      <a href="/index.html" title="Previous Page">&laquo; Previous</a>
+      {% else %}
+      <a href="/page{{ paginator.previous_page }}/" title="Previous Page">&laquo; Previous</a>
+      {% endif %}
+    {% endif %}
+  </span>
+  <span class="next">
+    {% if paginator.next_page %}
+    <a href="/page{{ paginator.next_page }}/" title="Next Page">Next &raquo;</a>
+    {% endif %}
+  </span>
 </div>
