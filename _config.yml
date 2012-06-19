@@ -1,0 +1,6 @@
+safe: true
+
+future: false
+pygments: false
+markdown: rdiscount
+permalink: /blog/:year/:month/:day/:title/

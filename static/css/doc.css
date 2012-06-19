@@ -1,0 +1,2 @@
+.fb-comments, .fb-comments iframe[style] {width: 100% !important;}
+.fb-comments, .fb-comments > span[style], .fb_iframe_widget iframe[style] { width: 100% !important; }
