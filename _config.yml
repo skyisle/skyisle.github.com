@@ -1,5 +1,6 @@
 safe: true
 
+paginate: 10
 future: false
 pygments: false
 markdown: rdiscount
