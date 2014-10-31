@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Glide를 소개합니다.</title>
+
+		<meta name="description" content="Brand-new Android image loader library that used by iosched 2014">
+		<meta name="author" content="Alan Jeon">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="../reveal/css/reveal.min.css">
+    	<link rel="stylesheet" href="../reveal/css/theme/android.css" id="theme">
+		<link rel="stylesheet" href="../reveal/css/footer.css">
+		<link rel="stylesheet" href="../reveal/css/main.css">
+
+        <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="../reveal/lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = '../reveal/css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="../reveal/lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+				<section data-state="no-footer">
+					<h1>Introducing Glide</h1>
+					<h3>Android image loader</h3>
+					<p>
+						<small>Presented by <a href="https://plus.google.com/+AlanJeon">Alan Jeon</a> | <a href="https://twitter.com/skyisle">@skyisle</a></small>
+					</p>
+				</section>
+
+				<!-- <section data-state="no-footer">
+					<h2>Heads Up</h2>
+					<p>
+						reveal.js is a framework for easily creating beautiful presentations using HTML. You'll need a browser with
+						support for CSS 3D transforms to see it in its full glory.
+					</p>
+
+					<aside class="notes">
+						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
+					</aside>
+				</section>
+ -->
+ 				<section>
+					<h2>Who am I?<h2>
+					<div class="row">
+						<div class="left">
+							<ul>
+								<li>前 GDG Android<br>Korea 운영진</li>
+								<li>SK planet</li>
+								<li>예쁜 지아 아빠</li>
+							</ul>
+						</div>
+						<img width=300 src="images/2014-10-26.jpg">
+					</div>
+					<aside class="notes">
+						Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
+					</aside>
+				</section>
+
+				<section data-state="no-footer">
+					<h2>iosched<h2>
+					<img width=320 src="https://lh3.ggpht.com/RNAmpgvnpj6yTP-50AGKnwmepTqAxBoE6ImTUzwHfBx8vPigAt0o_gFFgm5mWl9tubpX=h900-rw">
+				</section>
+
+				<section>
+					<h2>iosched<h2>
+					<p>
+						구글 I/O 앱, 안드로이드 팀이 최신 API나 디자인 패턴들을 적용.
+						<a href="https://github.com/google/iosched">https://github.com/google/iosched</a>
+					</p>
+				</section>
+
+				<section>
+					<h2>iosched - 이미지 로더<h2>
+					<p>
+						이 앱에서 사용되어온 이미지 로더 패턴에 대해 한번 알아봅시다.
+					</p>
+				</section>
+
+				<section>
+					<h2>iosched 2011</h2>
+					<p>
+					<pre class="fragment"><code data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
+BitmapUtils.fetchImage(getActivity(), speakerImageUrl, null, null,
+	new BitmapUtils.OnFetchCompleteListener() {
+	  	public void onFetchComplete(Object cookie, Bitmap result) {
+	      	if (result != null) {
+	          	speakerImgView.setImageBitmap(result);
+	      	}
+	  	}
+	});
+					</code></pre>
+					<div class="fragment fadein">
+						<p>
+						AsyncTask 안에서 다운로드, 캐시, 디코딩을 다 처리함
+						</p>
+						<pre><code data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
+public static void fetchImage(final Context context, final String url,
+	final BitmapFactory.Options decodeOptions,
+	final Object cookie, final OnFetchCompleteListener callback) {
+	new AsyncTask&lt;String, Void, Bitmap&gt;() {
+	    @Override
+	    protected Bitmap doInBackground(String... params) {
+	        final String url = params[0];
+	        if (TextUtils.isEmpty(url)) {
+	            return null;
+	        }
+						</code></pre>
+                        <a href="https://github.com/google/iosched/blob/2011/android/src/com/google/android/apps/iosched/util/BitmapUtils.java#L65" target=_new>Link!</a>
+					</div>
+                    <aside class="notes">
+                        AsyncTask의 동작의 변화, 3.0 이후에선 Serial executor로 한번에 하나씩 다운로드....
+                    </aside>
+				</section>
+
+                <section>
+                    <h2>안드로이드 개발자 문서 Training<h2>
+                    <p>
+                        <a href="https://developer.android.com/training/displaying-bitmaps/index.html">Displaying Bitmaps Efficiently</a>
+                    </p>
+
+                        <ul>
+                            <li class="fragment">BitmapFactory.Options 로 디코딩시 이미지 사이즈 조정해서 디코딩</li>
+                            <li class="fragment">백그라운드 스레드에서 디코딩</li>
+                            <li class="fragment">메모리 캐시 사용하기</li>
+                            <li class="fragment">설정변경(회전) 대응하기</li>
+                            <li class="fragment">메모리 관리</li>
+                        </ul>
+                </section>
+
+				<section>
+					<h2>iosched 2012</h2>
+					<p>
+					<pre><code data-trim contenteditable style="font-size: 18px; margin-top: 20px;">
+private Bitmap processNormalBitmap(String urlString) {
+    final String key = ImageCache.hashKeyForDisk(urlString);
+    FileDescriptor fileDescriptor = null;
+    FileInputStream fileInputStream = null;
+    DiskLruCache.Snapshot snapshot;
+    synchronized (mHttpDiskCacheLock) {
+        // Wait for disk cache to initialize
+        while (mHttpDiskCacheStarting) {
+            try {
+                mHttpDiskCacheLock.wait();
+            } catch (InterruptedException e) {}
+        }
+
+        if (mHttpDiskCache != null) {
+            try {
+					</code></pre>
+
+					<p>
+					ImageFetcher 모듈화, DiskLruCache 사용, HttpURLConnection 사용
+					</p>
+					<a href="https://github.com/google/iosched/blob/2012/android/src/com/google/android/apps/iosched/util/ImageFetcher.java#L44" target=_new>Link!</a>
+				</section>
+
+				<section>
+					<h2>iosched 2013</h2>
+					<p>
+					Volley 의 등장
+					</p>
+					<img width=480 src="http://www.moontaknet.com/files/attach/images/86096/829/645/dbdd2bdc4b9f18acee5fb80a5a10cb88.jpg">
+				</section>
+				<section>
+					<h2>Volley</h2>
+					<p>
+					<ul>
+						<li>강력한 네트워크 라이브러리</li>
+						<li>재시도 정책 지정 가능</li>
+						<li>손쉬운 캐싱</li>
+						<li>요청 취소 기능</li>
+						<li>다중 접속 관리</li>
+						<li>URL 이미지 로딩기능 제공</li>
+					</ul>
+					<p>
+				</section>
+
+				<section>
+					<h2>I/O 2013 Volley 세션</h2>
+					<p>
+					<ul>
+						<li>성능에 자신감</li>
+						<li>모든 Http 라이브러리보다 빠르다! </li>
+                        <li>최대 10배! 우리가 짱임</li>
+						<li>구글의 노하우가 녹아 있다고~ 안쓰면 손해임</li>
+					</ul>
+					</p>
+
+				</section>
+
+                <section>
+                    <h2>믿고 쓰라고 해서 썼으나.....</h2>
+                </section>
+
+				<section>
+					<a href="#" class="image navigate-down">
+						<img width="50%" height="50%" src="images/bad_volley_chansuk.png" alt="Down arrow">
+					</a>
+					<p>
+					<aside class="notes">
+					캐시 구현이 따로 없어요... 현직 구글러의 증언입니다.
+					</aside>
+				</aside>
+				</section>
+
+				<section>
+					<a href="#" class="image navigate-down">
+						<img width="50%" height="50%" src="images/bad_volley_giwan.png" alt="Down arrow">
+					</a>
+					<p>
+
+					<aside class="notes">
+					로컬파일 처리를 못해줘요. content:// asset://
+					</aside>
+				</section>
+
+				<section>
+					<a href="#" class="image navigate-down">
+						<img width="50%" height="50%" src="images/bad_volley_giwan2.png" alt="Down arrow">
+					</a>
+				</section>
+
+				<section>
+					<a href="#" class="image navigate-down">
+						<img width="50%" height="50%" src="images/bad_volley_sewon.png" alt="Down arrow">
+					</a>
+				</section>
+<!--
+				<section>
+					<a href="#" class="image navigate-down">
+						<img width="50%" height="50%" src="images/bad_volley_taeho.png" alt="Down arrow">
+					</a>
+				</section> -->
+                <section>
+                    <p>
+                    <ul>
+                        <li>릴리즈 프로세스 없음</li>
+                        <li>이슈관리 안됨</li>
+                        <li>사용법 정리 안됨</li>
+                    </ul>
+                    </p>
+                </section>
+
+				<section>
+					<p>
+					.........(긴 한숨)
+					</p>
+				</section>
+
+				<section>
+					<h2>iosched 2014</h2>
+					<p>
+					Glide의 등장
+					</p>
+				</section>
+
+				<section>
+					<p>
+						<img width="100%" height="100%" src="http://mblogthumb4.phinf.naver.net/20110215_267/iloveortho22_1297735707522toeom_JPEG/%BF%C3%B5%E5%BA%B8%C0%CC.jpg?type=w2"/>
+					</p>
+					<p>
+				</section>
+
+				<section>
+					<h2>Glide?</h2>
+					<p><a href="https://github.com/bumptech/glide">https://github.com/bumptech/glide</a></p>
+					<p>
+					Bump! 앱을 만든 Bumptech가 구글에 인수되면서 Bump앱에서 사용하던 이미지 로딩 라이브러리를 공개!
+					</p>
+				</section>
+
+				<section>
+					<h2>Glide 특징</h2>
+					<!-- <ul>
+						<li>사용하기 편리한 API</li>
+						<li>List뷰 재사용시 이전 작업 자동취소</li>
+						<li>디스크, 메모리 캐시</li>
+						<li>비트맵, 리소스 폴링</li>
+						<li>Transformation 지원</li>
+						<li>Placeholder지원</li>
+						<li>썸네일 지원</li>
+						<li>애니메이션 지원</li>
+						<li>Ani-gif 로딩 지원</li>
+						<li>손쉽게 외부라이브러리 Plugin이 가능한 설계 (Volley, okhttp)</li>
+						<li>메모리, 디스크 캐싱</li>
+						<li>비트맵 리사이클 지원</li>
+						<li>비디오 파일 still이미지로딩</li>
+						<li>Lifecycle 지원</li>
+					</ul> -->
+					<p>
+				</section>
+
+				<section>
+					<h2>사용하기 편리한 API</h2>
+					<div class="row">
+						<div class="left">
+							<pre style="width: auto"><code data-trim>
+Glide.with(this)
+	.load("http://goo.gl/kfVV6a")
+	.into(imageView);
+							</code></pre>
+						</div>
+						<img class="right fragment" width="320" height="566" src="images/device-2014-10-30-155932.png" alt="용욱님 만세.">
+					</div>
+				</section>
+
+				<section>
+					<h2>Placeholder, 애니메이션, Transfomation</h2>
+					<div class="row">
+						<div class="left">
+							<pre style="width: 100%"><code data-trim>
+Glide.with(myFragment)
+	.load(url)
+	.centerCrop()
+	.placeholder(R.drawable.loading_spinner)
+	.crossFade()
+	.into(myImageView);
+							</code></pre>
+						</div>
+					</div>
+				</section>
+
+				<section>
+					<h2>다양한 데이터 모델 지원</h2>
+					<p>
+						content://, file://, http://, android.resource:// </a>.
+					</p>
+				</section>
+
+				<section>
+					<h2>Ani-gif 로딩</h2>
+					<div class="row">
+						<div class="left">
+						<pre style="width: auto"><code data-trim>
+Glide.with(this)
+	.load("http://i.imgur.com/HaouSvg.gif")
+	.into(imageView);
+						</code></pre>
+						</div>
+						<video controls autoplay class="right fragment" width="320" height="566" src="images/device-2014-10-30-164807.mp4" alt="."/>
+					</div>
+				</section>
+
+
+				<section>
+					<h2>비트맵 객체 재활용</h2>
+
+					<p>
+						Jank를 최소화 하기 위해 Bitmap 객체 재활용
+					</p>
+
+					<a href="http://developer.android.com/training/displaying-bitmaps/manage-memory.html#inBitmap">Manage Memory on Android 3.0 and Higher</a>
+					<pre style="width: auto"><code data-trim>
+public static class BitmapFactory.Options {
+public Bitmap inBitmap; // Added in API level 11
+}
+					</code></pre>
+
+					<p>
+						If set, decode methods that take the Options object will attempt to reuse this bitmap when loading content.
+					</p>
+                </section>
+
+                <section>
+                    <h2>성능 비교</h2>
+                    <video controls autoplay class="center fragment" width="320" height="566" src="images/device-2014-10-31-232350.mp4" alt="."/>
+                    <div width=10px height=10px style="color:#ffff00">
+                    <aside>
+Draw is the time spent building display lists in Java. It indicates how much time is spent running methods such as View.onDraw(Canvas).
+Process is the time spent by Android’s 2D renderer to execute the display lists. The more Views in your hierarchy, the more drawing commands must be executed.
+Execute is the time it took to send a frame to the compositor. This part of the graph is usually small.
+                    </aside>
+                </section>
+				<section>
+					<h2>한눈에 비교</h2>
+					<table class="reveal">
+					    <tr>
+					    	<th>비고</th>
+						    <th>Glide</th>
+						    <th>Picasso</th>
+						    <th>Volley</th>
+						    <th>AUIL</th>
+					    </tr>
+
+					    <tr>
+						    <td>편리한 API</td>
+						    <td>YES</td>
+						    <td>YES</td>
+						    <td>NO</td>
+						    <td>NO</td>
+					    </tr>
+
+					    <tr>
+    						<td>다양한 Model</td>
+    						<td>YES</td>
+    						<td>YES</td>
+    						<td>NO</td>
+    						<td>NO</td>
+					    </tr>
+
+					    <tr>
+						      <td>Ani-Gif</td>
+						      <td>YES</td>
+						      <td>NO</td>
+						      <td>NO</td>
+						      <td>NO</td>
+					    </tr>
+
+					    <tr>
+                            <td>Bitmap 재활용(No Jank!)</td>
+                            <td>YES</td>
+                            <td>NO</td>
+                            <td>NO</td>
+                            <td>NO</td>
+					    </tr>
+				    </table>
+                    <img width=300 src="images/apk_qr.png">
+				</section>
+
+				<section>
+					<h2>적용 방법</h2>
+					<p>
+                    <pre style="width: auto"><code data-trim>
+dependencies {
+    compile 'com.github.bumptech.glide:glide:3.3.+'
+    compile 'com.android.support:support-v4:21.0.0'
+}
+</code></pre>
+                    </p>
+				</section>
+
+				<section>
+					<h1>Q/A</h1>
+				</section>
+
+                <section data-state="no-footer">
+                      <h2>Thank you!</h2>
+                        <ul style="list-style: none">
+                          <li>
+                            <span style="font-family: FontAwesome; margin-right: 0.5em" class="fa fa-fw fa-picture-o"></span>
+                            <a href="http://skyisle.github.io/glide">
+                              skyisle.github.io/glide
+                            </a>
+                          </li>
+                          <li>
+                            <span style="font-family: FontAwesome; margin-right: 0.5em" class="fa fa-fw fa-github"></span>
+                            <a href="https://github.com/skyisle/imageloaders">
+                              github.com/skyisle/imageloaders
+                            </a>
+                            (<a href="https://github.com/skyisle/imageloaders/releases/download/1.0.0/imageloaders.apk">apk</a>)
+                          </li>
+                          <li>
+                            <span style="font-family: FontAwesome; margin-right: 0.5em" class="fa fa-fw fa-twitter"></span>
+                            <a href="http://twitter.com/skyisle">
+                              @skyisle
+                            </a>
+                          </li>
+                          <li>
+                            <span style="font-family: FontAwesome; margin-right: 0.5em" class="fa fa-fw fa-google-plus"></span>
+                            <a href="http://plus.google.com/+AlanJeon">
+                              +AlanJeon
+                            </a>
+                          </li>
+                        </ul>
+                </section>
+
+			</div>
+
+			<footer id="footer">
+	        	<a href="http://plus.google.com/+AlanJeon">+Alan Jeon</a>|
+	        	<a href="http://twitter.com/skyisle">@skyisle</a>
+	      	</footer>
+		</div>
+
+		<script src="../reveal/lib/js/head.min.js"></script>
+		<script src="../reveal/js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: false,
+				history: true,
+				center: true,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'fade', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: '../reveal/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../reveal/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../reveal/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../reveal/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: '../reveal/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
